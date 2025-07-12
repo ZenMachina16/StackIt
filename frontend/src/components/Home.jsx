@@ -236,7 +236,7 @@ const Questions = () => {
                     </div>
                     
                     <div className="question-author">
-                      <span className="author-name">{question.author.username}</span>
+                      <span className="author-name">{question.author?.name || 'Unknown'}</span>
                     </div>
                   </div>
                 </div>

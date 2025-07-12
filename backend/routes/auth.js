@@ -126,4 +126,30 @@ router.get('/me', auth, async (req, res) => {
   }
 });
 
+// @route   GET /api/auth/notifications
+// @desc    Get current user's notifications
+// @access  Private
+router.get('/notifications', auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    res.json({ notifications: user.notifications });
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching notifications' });
+  }
+});
+
+// @route   PATCH /api/auth/notifications/mark-read
+// @desc    Mark all notifications as read for the current user
+// @access  Private
+router.patch('/notifications/mark-read', auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    user.notifications.forEach(n => n.isRead = true);
+    await user.save();
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ message: 'Error marking notifications as read' });
+  }
+});
+
 module.exports = router; 

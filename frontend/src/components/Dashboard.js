@@ -81,7 +81,7 @@ const Dashboard = () => {
         <h1>Dashboard</h1>
         {user && (
           <div className="welcome-message">
-            <h2>Welcome back, {user.username}!</h2>
+            <h2>Welcome back, {user?.name || 'User'}!</h2>
             <p>Ready to explore and share knowledge?</p>
           </div>
         )}
