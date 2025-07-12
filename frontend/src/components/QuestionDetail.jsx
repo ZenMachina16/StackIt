@@ -14,6 +14,7 @@ const QuestionDetail = () => {
   const [submitting, setSubmitting] = useState(false);
   const [voteLoading, setVoteLoading] = useState(null); // answerId being voted
   const [loginPrompt, setLoginPrompt] = useState(false);
+  const [votedAnswers, setVotedAnswers] = useState({}); // {answerId: 'up'|'down'}
 
   const token = localStorage.getItem('token');
   const isAuthenticated = !!token;
@@ -69,7 +70,7 @@ const QuestionDetail = () => {
     }
   };
 
-  // Handle voting
+  // Handle voting with instant UI update
   const handleVote = async (answerId, type) => {
     if (!isAuthenticated) {
       setLoginPrompt(true);
@@ -84,12 +85,28 @@ const QuestionDetail = () => {
         }
       };
       const body = { type };
-      await axios.post(`/api/answers/${answerId}/vote`, body, config);
-      // Refresh question to update votes
-      const updated = await axios.get(`/api/questions/${id}`);
-      setQuestion(updated.data.question);
+      const res = await axios.post(`/api/answers/${answerId}/vote`, body, config);
+      if (res.data.success !== false) {
+        // Update the answer's vote count in local state instantly
+        setQuestion(prev => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            answers: prev.answers.map(ans => {
+              if (ans._id === answerId) {
+                const newVotes = { ...ans.votes };
+                if (type === 'up') newVotes.upvotes = (newVotes.upvotes || 0) + 1;
+                if (type === 'down') newVotes.downvotes = (newVotes.downvotes || 0) + 1;
+                return { ...ans, votes: newVotes };
+              }
+              return ans;
+            })
+          };
+        });
+        setVotedAnswers(prev => ({ ...prev, [answerId]: type }));
+      }
     } catch (err) {
-      setError('Failed to vote.');
+      setError(err.response?.data?.message || 'Failed to vote.');
     } finally {
       setVoteLoading(null);
     }
@@ -144,14 +161,14 @@ const QuestionDetail = () => {
             <div className="vote-controls">
               <button
                 className="vote-btn"
-                disabled={voteLoading === answer._id + 'up'}
+                disabled={voteLoading === answer._id + 'up' || votedAnswers[answer._id] === 'up'}
                 onClick={() => handleVote(answer._id, 'up')}
                 title={isAuthenticated ? 'Upvote' : 'Login to vote'}
               >▲</button>
               <div className="vote-count">{answer.votes?.upvotes || 0}</div>
               <button
                 className="vote-btn"
-                disabled={voteLoading === answer._id + 'down'}
+                disabled={voteLoading === answer._id + 'down' || votedAnswers[answer._id] === 'down'}
                 onClick={() => handleVote(answer._id, 'down')}
                 title={isAuthenticated ? 'Downvote' : 'Login to vote'}
               >▼</button>
