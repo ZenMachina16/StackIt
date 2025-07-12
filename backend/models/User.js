@@ -41,6 +41,20 @@ const userSchema = new mongoose.Schema({
     enum: ['user', 'admin'],
     default: 'user'
   },
+  profilePicture: {
+    type: String, // URL or local file path (e.g., from multer or cloud storage)
+  },
+  bio: {
+    type: String
+  },
+  location: {
+    type: String
+  },
+  profileVisibility: {
+    type: String,
+    enum: ['public', 'private'],
+    default: 'public'
+  },
   notifications: [notificationSchema]
 }, {
   timestamps: true

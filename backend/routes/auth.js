@@ -114,7 +114,14 @@ router.get('/me', auth, async (req, res) => {
       user: {
         id: req.user._id,
         name: req.user.name,
-        email: req.user.email
+        email: req.user.email,
+        role: req.user.role,
+        profilePicture: req.user.profilePicture,
+        bio: req.user.bio,
+        location: req.user.location,
+        profileVisibility: req.user.profileVisibility,
+        createdAt: req.user.createdAt,
+        updatedAt: req.user.updatedAt
       }
     });
   } catch (error) {
@@ -123,6 +130,34 @@ router.get('/me', auth, async (req, res) => {
       success: false,
       message: 'Server error'
     });
+  }
+});
+
+// @route   PUT /api/auth/me
+// @desc    Update current user profile
+// @access  Private
+router.put('/me', auth, async (req, res) => {
+  try {
+    const updates = {
+      bio: req.body.bio,
+      location: req.body.location,
+      profileVisibility: req.body.profileVisibility,
+      profilePicture: req.body.profilePicture, // Can be a URL or base64
+    };
+
+    const updatedUser = await User.findByIdAndUpdate(req.user._id, updates, {
+      new: true,
+      runValidators: true,
+    }).select('-password');
+
+    res.json({
+      success: true,
+      message: 'Profile updated successfully',
+      user: updatedUser,
+    });
+  } catch (error) {
+    console.error('Update profile error:', error.message);
+    res.status(500).json({ success: false, message: 'Server error' });
   }
 });
 
