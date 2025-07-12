@@ -138,6 +138,18 @@ router.get('/notifications', auth, async (req, res) => {
   }
 });
 
+// @route   GET /api/auth/notifications/debug
+// @desc    Debug: Get current user's notifications (all)
+// @access  Private
+router.get('/notifications/debug', auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    res.json({ notifications: user.notifications });
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching notifications (debug)' });
+  }
+});
+
 // @route   PATCH /api/auth/notifications/mark-read
 // @desc    Mark all notifications as read for the current user
 // @access  Private
