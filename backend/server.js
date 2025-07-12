@@ -5,6 +5,10 @@ require('dotenv').config();
 
 // Import routes
 const authRoutes = require('./routes/auth');
+const questionsRoutes = require('./routes/questions');
+const answersRoutes = require('./routes/answers');
+const tagsRoutes = require('./routes/tags');
+const notificationsRoutes = require('./routes/notifications');
 
 const app = express();
 
@@ -25,6 +29,10 @@ const connectDB = async () => {
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/questions', questionsRoutes);
+app.use('/api/answers', answersRoutes);
+app.use('/api/tags', tagsRoutes);
+app.use('/api/notifications', notificationsRoutes);
 
 // Basic route for testing
 app.get('/', (req, res) => {

@@ -17,7 +17,7 @@ const generateToken = (id) => {
 // @access  Public
 router.post('/register', async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { username, email, password } = req.body;
 
     // Check if user already exists
     const existingUser = await User.findOne({ email });
@@ -30,7 +30,7 @@ router.post('/register', async (req, res) => {
 
     // Create new user
     const user = await User.create({
-      name,
+      username,
       email,
       password
     });
@@ -44,7 +44,7 @@ router.post('/register', async (req, res) => {
       token,
       user: {
         id: user._id,
-        name: user.name,
+        username: user.username,
         email: user.email
       }
     });
@@ -91,7 +91,7 @@ router.post('/login', async (req, res) => {
       token,
       user: {
         id: user._id,
-        name: user.name,
+        username: user.username,
         email: user.email
       }
     });
@@ -113,7 +113,7 @@ router.get('/me', auth, async (req, res) => {
       success: true,
       user: {
         id: req.user._id,
-        name: req.user.name,
+        username: req.user.username,
         email: req.user.email
       }
     });
