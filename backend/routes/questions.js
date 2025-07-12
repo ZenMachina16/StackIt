@@ -49,7 +49,7 @@ router.post('/', auth, async (req, res) => {
     // Populate the created question
     const populatedQuestion = await Question.findById(question._id)
       .populate('tags', 'name')
-      .populate('author', 'username email');
+      .populate('author', 'name email');
 
     res.status(201).json({
       success: true,
@@ -81,7 +81,7 @@ router.get('/', async (req, res) => {
     // Get questions with pagination
     const questions = await Question.find()
       .populate('tags', 'name')
-      .populate('author', 'username email')
+      .populate('author', 'name email')
       .populate('acceptedAnswer')
       .sort({ createdAt: -1 })
       .skip(skip)
@@ -114,19 +114,19 @@ router.get('/:id', async (req, res) => {
   try {
     const question = await Question.findById(req.params.id)
       .populate('tags', 'name')
-      .populate('author', 'username email role')
+      .populate('author', 'name email')
       .populate({
         path: 'answers',
         populate: {
           path: 'author',
-          select: 'username email role'
+          select: 'name email role'
         }
       })
       .populate({
         path: 'acceptedAnswer',
         populate: {
           path: 'author',
-          select: 'username email role'
+          select: 'name email role'
         }
       });
 
@@ -197,12 +197,12 @@ router.put('/:id/accept/:answerId', auth, async (req, res) => {
     // Return updated question with population
     const updatedQuestion = await Question.findById(questionId)
       .populate('tags', 'name')
-      .populate('author', 'username email')
+      .populate('author', 'name email')
       .populate({
         path: 'acceptedAnswer',
         populate: {
           path: 'author',
-          select: 'username email'
+          select: 'name email'
         }
       });
 
