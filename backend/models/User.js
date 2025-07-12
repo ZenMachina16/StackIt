@@ -1,10 +1,27 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
-const userSchema = new mongoose.Schema({
-  name: {
+// Notification subdocument schema
+const notificationSchema = new mongoose.Schema({
+  message: {
     type: String,
-    required: [true, 'Please provide a name'],
+    required: true
+  },
+  isRead: {
+    type: Boolean,
+    default: false
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
+});
+
+const userSchema = new mongoose.Schema({
+  username: {
+    type: String,
+    required: [true, 'Please provide a username'],
+    unique: true,
     trim: true
   },
   email: {
@@ -18,7 +35,13 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Please provide a password'],
     minlength: 6
-  }
+  },
+  role: {
+    type: String,
+    enum: ['user', 'admin'],
+    default: 'user'
+  },
+  notifications: [notificationSchema]
 }, {
   timestamps: true
 });
