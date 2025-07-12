@@ -93,12 +93,22 @@ router.post('/:answerId/vote', auth, async (req, res) => {
       });
     }
 
-    // Update vote count
+    // Enforce one vote per user per answer
+    const alreadyVoted = answer.voters.find(v => v.user.toString() === req.user._id.toString());
+    if (alreadyVoted) {
+      return res.status(400).json({
+        success: false,
+        message: 'You have already voted on this answer'
+      });
+    }
+
+    // Update vote count and add to voters
     if (type === 'up') {
       answer.votes.upvotes += 1;
     } else {
       answer.votes.downvotes += 1;
     }
+    answer.voters.push({ user: req.user._id, type });
 
     await answer.save();
 

@@ -31,7 +31,13 @@ const answerSchema = new mongoose.Schema({
   votes: {
     type: votesSchema,
     default: () => ({})
-  }
+  },
+  voters: [
+    {
+      user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+      type: { type: String, enum: ['up', 'down'] }
+    }
+  ]
 }, {
   timestamps: true
 });
