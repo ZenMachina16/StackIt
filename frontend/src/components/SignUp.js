@@ -5,14 +5,14 @@ import axios from 'axios';
 const SignUp = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    username: '',
+    name: '',
     email: '',
     password: ''
   });
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const { username, email, password } = formData;
+  const { name, email, password } = formData;
 
   const onChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -30,7 +30,7 @@ const SignUp = () => {
         }
       };
 
-      const body = JSON.stringify({ username, email, password });
+      const body = JSON.stringify({ name, email, password });
       const res = await axios.post('/api/auth/register', body, config);
 
       if (res.data.success) {
@@ -59,12 +59,12 @@ const SignUp = () => {
 
       <form onSubmit={onSubmit}>
         <div className="form-group">
-          <label htmlFor="username">Username</label>
+          <label htmlFor="name">Username</label>
           <input
             type="text"
-            id="username"
-            name="username"
-            value={username}
+            id="name"
+            name="name"
+            value={name}
             onChange={onChange}
             required
             placeholder="Enter your username"

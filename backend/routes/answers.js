@@ -41,6 +41,19 @@ router.post('/:questionId', auth, async (req, res) => {
     question.answers.push(answer._id);
     await question.save();
 
+    // After saving the answer and before sending the response
+    const User = require('../models/User');
+    if (question.author.toString() !== req.user._id.toString()) {
+      const questionAuthor = await User.findById(question.author);
+      if (questionAuthor) {
+        questionAuthor.notifications.push({
+          message: `@${req.user.name} answered your question`,
+          isRead: false
+        });
+        await questionAuthor.save();
+      }
+    }
+
     // Populate the created answer
     const populatedAnswer = await Answer.findById(answer._id)
       .populate('author', 'name email role')

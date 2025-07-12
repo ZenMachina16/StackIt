@@ -76,12 +76,12 @@ const Profile = () => {
           <div className="profile-card">
             <div className="profile-avatar">
               <div className="avatar-placeholder">
-                {user.username.charAt(0).toUpperCase()}
+                {(user?.name?.charAt(0) || 'U').toUpperCase()}
               </div>
             </div>
             
             <div className="profile-info">
-              <h2>{user.username}</h2>
+              <h2>{user?.name || 'User'}</h2>
               <p className="user-email">{user.email}</p>
               <p className="user-role">Role: {user.role}</p>
               <p className="user-since">Member since: {new Date(user.createdAt).toLocaleDateString()}</p>
