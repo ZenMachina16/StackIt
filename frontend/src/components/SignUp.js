@@ -10,13 +10,17 @@ import {
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-const SignIn = () => {
+const SignUp = () => {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({ email: '', password: '' });
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+  });
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const { email, password } = formData;
+  const { name, email, password } = formData;
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -29,15 +33,16 @@ const SignIn = () => {
 
     try {
       const config = { headers: { 'Content-Type': 'application/json' } };
-      const res = await axios.post('/api/auth/login', JSON.stringify(formData), config);
+      const res = await axios.post('/api/auth/register', JSON.stringify(formData), config);
 
       if (res.data.success) {
-        localStorage.setItem('token', res.data.token);
-        setMessage('Login successful! Redirecting to dashboard...');
-        setTimeout(() => navigate('/dashboard'), 1500);
+        setMessage('Registration successful! Redirecting...');
+        setTimeout(() => navigate('/login'), 1500);
+      } else {
+        setMessage('Registration failed');
       }
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Login failed';
+      const errorMessage = error.response?.data?.message || 'Something went wrong.';
       setMessage(errorMessage);
     }
 
@@ -56,19 +61,19 @@ const SignIn = () => {
       }}
     >
       <Card
+        elevation={8}
         sx={{
+          backdropFilter: 'blur(12px)',
+          background: 'rgba(255, 255, 255, 0.8)',
+          border: '1px solid rgba(255, 165, 0, 0.2)',
+          borderRadius: '30px',
+          padding: 4,
           width: '100%',
           maxWidth: 420,
-          padding: 4,
-          borderRadius: '30px',
-          background: 'rgba(255, 255, 255, 0.75)',
-          boxShadow: '0 8px 32px rgba(255, 165, 0, 0.25)',
-          backdropFilter: 'blur(10px)',
-          border: '1px solid rgba(255, 165, 0, 0.25)',
         }}
       >
-        <Typography variant="h5" align="center" gutterBottom sx={{ fontWeight: 'bold' }}>
-          Sign In
+        <Typography variant="h5" align="center" fontWeight="bold" gutterBottom>
+          Sign Up
         </Typography>
 
         {message && (
@@ -76,14 +81,13 @@ const SignIn = () => {
             variant="body2"
             sx={{
               mb: 2,
-              borderRadius: '12px',
-              padding: '10px',
+              borderRadius: '15px',
+              p: 1.5,
+              fontSize: '14px',
               textAlign: 'center',
-              backgroundColor: message.includes('successful') ? '#e6ffed' : '#ffe6e6',
+              backgroundColor: message.includes('successful') ? '#e6ffe6' : '#ffe6e6',
               color: message.includes('successful') ? '#2e7d32' : '#c62828',
-              border: `1px solid ${
-                message.includes('successful') ? '#81c784' : '#ef5350'
-              }`,
+              border: `1px solid ${message.includes('successful') ? '#a5d6a7' : '#ef9a9a'}`,
             }}
           >
             {message}
@@ -93,6 +97,18 @@ const SignIn = () => {
         <form onSubmit={handleSubmit}>
           <TextField
             fullWidth
+            label="Username"
+            name="name"
+            value={name}
+            onChange={handleChange}
+            margin="normal"
+            required
+            InputProps={{ sx: { borderRadius: '20px' } }}
+            InputLabelProps={{ sx: { color: '#777' } }}
+          />
+
+          <TextField
+            fullWidth
             label="Email"
             name="email"
             type="email"
@@ -100,16 +116,8 @@ const SignIn = () => {
             onChange={handleChange}
             margin="normal"
             required
-            variant="outlined"
-            InputProps={{
-              sx: {
-                borderRadius: '15px',
-                color: '#333',
-              },
-            }}
-            InputLabelProps={{
-              sx: { color: '#666' },
-            }}
+            InputProps={{ sx: { borderRadius: '20px' } }}
+            InputLabelProps={{ sx: { color: '#777' } }}
           />
 
           <TextField
@@ -121,47 +129,39 @@ const SignIn = () => {
             onChange={handleChange}
             margin="normal"
             required
-            variant="outlined"
-            InputProps={{
-              sx: {
-                borderRadius: '15px',
-                color: '#333',
-              },
-            }}
-            InputLabelProps={{
-              sx: { color: '#666' },
-            }}
+            InputProps={{ sx: { borderRadius: '20px' } }}
+            InputLabelProps={{ sx: { color: '#777' } }}
           />
 
           <Button
             type="submit"
             fullWidth
             variant="contained"
+            disabled={isLoading}
             sx={{
               mt: 3,
               py: 1.4,
-              fontWeight: 600,
+              fontWeight: 'bold',
               fontSize: '16px',
-              borderRadius: '25px',
+              borderRadius: '30px',
               backgroundColor: '#ffa726',
               boxShadow: '0 4px 12px rgba(255, 167, 38, 0.4)',
-              transition: 'all 0.3s ease',
+              transition: '0.3s ease-in-out',
               '&:hover': {
                 backgroundColor: '#fb8c00',
                 boxShadow: '0 6px 18px rgba(251, 140, 0, 0.5)',
               },
             }}
-            disabled={isLoading}
           >
-            {isLoading ? 'Signing In...' : 'Sign In'}
+            {isLoading ? 'Creating Account...' : 'Sign Up'}
           </Button>
         </form>
 
         <Box mt={3} textAlign="center">
           <Typography variant="body2">
-            Don’t have an account?{' '}
-            <MuiLink component={Link} to="/signup" underline="hover" color="primary">
-              Sign Up
+            Already have an account?{' '}
+            <MuiLink component={Link} to="/login" underline="hover" color="primary">
+              Sign In
             </MuiLink>
           </Typography>
           <Typography variant="body2" mt={1}>
@@ -175,4 +175,4 @@ const SignIn = () => {
   );
 };
 
-export default SignIn;
+export default SignUp;
