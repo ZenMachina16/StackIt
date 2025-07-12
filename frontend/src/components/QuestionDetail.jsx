@@ -3,6 +3,8 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
+import { Paper, Card, Box, Typography, Button, Chip, Alert, Divider } from '@mui/material';
+import { styled } from '@mui/material/styles';
 
 const QuestionDetail = () => {
   const { id } = useParams();
@@ -202,7 +204,7 @@ const QuestionDetail = () => {
         </div>
         <div className="question-description" dangerouslySetInnerHTML={{ __html: question.description }} />
         <div className="question-meta">
-          <span>Asked by <b>{question.author?.name || 'Unknown'}</b></span>
+          <Typography variant="caption">Asked by <b>{question.author?.name || 'Unknown'}</b></Typography>
         </div>
       </div>
 
@@ -229,9 +231,9 @@ const QuestionDetail = () => {
             </div>
             <div className="answer-content">
               <div dangerouslySetInnerHTML={{ __html: answer.description }} />
-              <div className="answer-meta">
-                <span>By <b>{answer.author?.name || 'Unknown'}</b></span>
-              </div>
+              <Typography variant="caption" display="block" mt={1}>
+                By <b>{answer.author?.name || 'User'}</b>
+              </Typography>
               {/* Comments Section */}
               <div className="comments-section">
                 <h5>Comments</h5>

@@ -156,143 +156,97 @@ const Questions = () => {
 
   return (
     <div className="questions-page">
-      <div className="container">
-        {/* Top Action Bar */}
-        <div className="top-action-bar">
-          <button 
-            className="btn btn-primary ask-question-btn"
-            onClick={handleAskQuestion}
-          >
-            Ask New Question
-          </button>
-          
-          <div className="filter-search-container">
-            <div className="filter-controls">
-              <button 
-                className={`filter-btn ${filter === 'newest' ? 'active' : ''}`}
-                onClick={() => handleFilterChange('newest')}
-              >
-                Newest
-              </button>
-              <button 
-                className={`filter-btn ${filter === 'unanswered' ? 'active' : ''}`}
-                onClick={() => handleFilterChange('unanswered')}
-              >
-                Unanswered
-              </button>
-              <div className="dropdown">
-                <button className="filter-btn dropdown-btn">
-                  More ▼
-                </button>
-              </div>
-            </div>
-            
-            <form onSubmit={handleSearch} className="search-form">
-              <input
-                type="text"
-                placeholder="Search"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="search-input"
-              />
-              <button type="submit" className="search-btn">
-                🔍
-              </button>
-            </form>
+      <div className="gradient-bg">
+        <div className="container">
+          <div className="top-bar">
+            <h2>Questions</h2>
+            <button className="btn-primary" onClick={handleAskQuestion}>Ask a Question</button>
           </div>
-        </div>
 
-        {/* Questions List */}
-        <div className="questions-container">
-          {questions.length === 0 ? (
-            <div className="no-questions">
-              <h3>No questions found</h3>
-              <p>Be the first to ask a question!</p>
-              <button className="btn btn-primary" onClick={handleAskQuestion}>
-                Ask the First Question
-              </button>
-            </div>
-          ) : (
-            questions.map(question => (
-              <div key={question._id} className="question-item">
-                <div className="question-main">
-                  <h3 className="question-title">
-                    <Link to={`/questions/${question._id}`}>
-                      {question.title}
-                    </Link>
-                  </h3>
-                  
-                  <p className="question-excerpt">
-                    {createExcerpt(question.description)}
-                  </p>
-                  
-                  <div className="question-footer">
-                    <div className="question-tags">
-                      {question.tags.map(tag => (
-                        <span key={tag._id} className="tag">
-                          {tag.name}
-                        </span>
+          <form onSubmit={handleSearch} className="search-bar">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search..."
+            />
+            <button type="submit">Search</button>
+          </form>
+
+          <div className="filter-buttons">
+            <button
+              className={filter === 'newest' ? 'active' : ''}
+              onClick={() => handleFilterChange('newest')}
+            >
+              Newest
+            </button>
+            <button
+              className={filter === 'unanswered' ? 'active' : ''}
+              onClick={() => handleFilterChange('unanswered')}
+            >
+              Unanswered
+            </button>
+          </div>
+
+          {error && <div className="error-box">{error}</div>}
+
+          <div className="questions-list">
+            {loading ? (
+              <p>Loading...</p>
+            ) : questions.length === 0 ? (
+              <div className="no-questions">
+                <p>No questions found.</p>
+                <button onClick={handleAskQuestion}>Be the first to ask!</button>
+              </div>
+            ) : (
+              questions.map((q) => (
+                <div className="question-card" key={q._id}>
+                  <div className="question-header">
+                    <Link to={`/questions/${q._id}`}>{q.title}</Link>
+                  </div>
+                  <div className="question-body">
+                    <p>{createExcerpt(q.description)}</p>
+                    <div className="tags">
+                      {q.tags.map((tag) => (
+                        <span className="tag" key={tag._id}>{tag.name}</span>
                       ))}
                     </div>
-                    
-                    <div className="question-author">
-                      <span className="author-name">{question.author?.name || 'Unknown'}</span>
+                    <div className="meta">
+                      <span>{q.answers.length} answers</span>
+                      <span>by {q.author?.name || 'Unknown'}</span>
                     </div>
                   </div>
                 </div>
-                
-                <div className="question-stats">
-                  <div className="answer-count">
-                    <span className="count">{question.answers.length}</span>
-                    <span className="label">ans</span>
-                  </div>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
+              ))
+            )}
+          </div>
 
-        {/* Pagination Controls */}
-        {pagination.totalPages > 1 && (
-          <div className="pagination">
-            <div className="pagination-controls">
-              <button 
+          {pagination.totalPages > 1 && (
+            <div className="pagination">
+              <button
                 onClick={() => handlePageChange(pagination.currentPage - 1)}
                 disabled={!pagination.hasPrevPage}
-                className="pagination-btn"
               >
-                ‹
+                &lt;
               </button>
-              
-              {/* Page numbers */}
-              {Array.from({ length: Math.min(7, pagination.totalPages) }, (_, i) => {
-                const startPage = Math.max(1, pagination.currentPage - 3);
-                const page = startPage + i;
-                
-                if (page <= pagination.totalPages) {
-                  return (
-                    <button 
-                      key={page}
-                      onClick={() => handlePageChange(page)}
-                      className={`pagination-btn ${page === pagination.currentPage ? 'active' : ''}`}
-                    >
-                      {page}
-                    </button>
-                  );
-                }
-                return null;
-              })}
-              
-              <button 
+              {Array.from({ length: pagination.totalPages }).map((_, i) => (
+                <button
+                  key={i + 1}
+                  className={pagination.currentPage === i + 1 ? 'active' : ''}
+                  onClick={() => handlePageChange(i + 1)}
+                >
+                  {i + 1}
+                </button>
+              ))}
+              <button
                 onClick={() => handlePageChange(pagination.currentPage + 1)}
                 disabled={!pagination.hasNextPage}
-                className="pagination-btn"
               >
-                ›
+                &gt;
               </button>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
