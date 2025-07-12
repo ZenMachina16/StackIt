@@ -169,24 +169,153 @@ const Header = () => {
                   Profile
                 </MuiLink>
                 <Box sx={{ position: 'relative', mx: 1 }}>
-                  <IconButton color="inherit" onClick={handleBellClick}>
-                    <FiBell size={24} />
+                  <IconButton 
+                    onClick={handleBellClick}
+                    sx={{
+                      color: '#333',
+                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                      backdropFilter: 'blur(10px)',
+                      border: '1px solid rgba(255, 255, 255, 0.2)',
+                      borderRadius: '12px',
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                        transform: 'translateY(-2px)',
+                        boxShadow: '0 8px 25px rgba(255, 111, 0, 0.3)',
+                      },
+                    }}
+                  >
+                    <FiBell size={20} />
                     {unreadCount > 0 && (
-                      <span className="notification-count">{unreadCount}</span>
+                      <Box
+                        sx={{
+                          position: 'absolute',
+                          top: -2,
+                          right: -2,
+                          background: 'linear-gradient(135deg, #ff6f00, #ff8f00)',
+                          color: 'white',
+                          borderRadius: '50%',
+                          width: 18,
+                          height: 18,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '0.7rem',
+                          fontWeight: 'bold',
+                          border: '2px solid rgba(255, 255, 255, 0.3)',
+                          boxShadow: '0 2px 8px rgba(255, 111, 0, 0.4)',
+                          animation: 'pulse 2s infinite',
+                        }}
+                      >
+                        {unreadCount}
+                      </Box>
                     )}
                   </IconButton>
                   {showDropdown && (
-                    <Box className="notification-dropdown" sx={{ right: 0, top: 40, minWidth: 280 }}>
-                      {notifications.length === 0 ? (
-                        <div className="notification-empty">No notifications</div>
-                      ) : (
-                        notifications.slice(0, 10).map((n, idx) => (
-                          <div key={idx} className={`notification-item${n.isRead ? '' : ' unread'}`}>
-                            {n.message}
-                            <span className="notification-date">{new Date(n.createdAt).toLocaleString()}</span>
-                          </div>
-                        ))
-                      )}
+                    <Box 
+                      className="notification-dropdown"
+                      sx={{ 
+                        position: 'absolute',
+                        right: 0, 
+                        top: 55, 
+                        minWidth: 320,
+                        maxHeight: 400,
+                        background: 'rgba(255, 255, 255, 0.95)',
+                        backdropFilter: 'blur(20px)',
+                        WebkitBackdropFilter: 'blur(20px)',
+                        border: '1px solid rgba(255, 255, 255, 0.3)',
+                        borderRadius: '16px',
+                        boxShadow: '0 20px 40px rgba(0, 0, 0, 0.1)',
+                        overflow: 'hidden',
+                        zIndex: 1400,
+                        animation: 'slideDown 0.3s ease-out',
+                        '&::before': {
+                          content: '""',
+                          position: 'absolute',
+                          top: -8,
+                          right: 20,
+                          width: 16,
+                          height: 16,
+                          background: 'rgba(255, 255, 255, 0.95)',
+                          border: '1px solid rgba(255, 255, 255, 0.3)',
+                          borderBottom: 'none',
+                          borderRight: 'none',
+                          transform: 'rotate(45deg)',
+                          backdropFilter: 'blur(20px)',
+                        }
+                      }}
+                    >
+                      <Box sx={{ 
+                        padding: '16px 20px 12px',
+                        borderBottom: '1px solid rgba(255, 255, 255, 0.3)',
+                        background: 'linear-gradient(135deg, rgba(255, 111, 0, 0.1), rgba(255, 143, 0, 0.05))',
+                      }}>
+                        <Typography variant="h6" sx={{ 
+                          color: '#333',
+                          fontWeight: 600,
+                          fontSize: '1rem',
+                          margin: 0,
+                        }}>
+                          Notifications
+                        </Typography>
+                      </Box>
+                      <Box sx={{ maxHeight: 320, overflowY: 'auto' }}>
+                        {notifications.length === 0 ? (
+                          <Box sx={{ 
+                            padding: '40px 20px',
+                            textAlign: 'center',
+                            color: 'rgba(0, 0, 0, 0.5)',
+                            fontSize: '0.9rem',
+                          }}>
+                            <FiBell size={24} style={{ marginBottom: '8px', opacity: 0.3 }} />
+                            <div>No notifications yet</div>
+                          </Box>
+                        ) : (
+                          notifications.slice(0, 10).map((n, idx) => (
+                            <Box 
+                              key={idx} 
+                              sx={{
+                                padding: '16px 20px',
+                                borderBottom: idx < notifications.length - 1 ? '1px solid rgba(255, 255, 255, 0.3)' : 'none',
+                                backgroundColor: n.isRead ? 'transparent' : 'rgba(255, 111, 0, 0.05)',
+                                transition: 'all 0.2s ease',
+                                '&:hover': {
+                                  backgroundColor: 'rgba(255, 111, 0, 0.08)',
+                                  transform: 'translateX(4px)',
+                                },
+                                position: 'relative',
+                                '&::before': n.isRead ? {} : {
+                                  content: '""',
+                                  position: 'absolute',
+                                  left: 0,
+                                  top: 0,
+                                  bottom: 0,
+                                  width: 3,
+                                  background: 'linear-gradient(135deg, #ff6f00, #ff8f00)',
+                                  borderRadius: '0 2px 2px 0',
+                                }
+                              }}
+                            >
+                              <Typography sx={{ 
+                                color: '#333',
+                                fontSize: '0.9rem',
+                                lineHeight: 1.4,
+                                fontWeight: n.isRead ? 400 : 500,
+                                marginBottom: '6px',
+                              }}>
+                                {n.message}
+                              </Typography>
+                              <Typography sx={{ 
+                                color: 'rgba(0, 0, 0, 0.6)',
+                                fontSize: '0.75rem',
+                                fontWeight: 400,
+                              }}>
+                                {new Date(n.createdAt).toLocaleString()}
+                              </Typography>
+                            </Box>
+                          ))
+                        )}
+                      </Box>
                     </Box>
                   )}
                 </Box>

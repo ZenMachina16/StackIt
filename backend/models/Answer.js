@@ -28,6 +28,10 @@ const answerSchema = new mongoose.Schema({
     required: [true, 'Please provide an answer description'],
     trim: true
   },
+  isAccepted: {
+    type: Boolean,
+    default: false
+  },
   votes: {
     type: votesSchema,
     default: () => ({})

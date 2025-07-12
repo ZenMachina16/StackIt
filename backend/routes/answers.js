@@ -52,6 +52,7 @@ router.post('/:questionId', auth, async (req, res) => {
           isRead: false
         });
         await questionAuthor.save();
+        console.log(`Notification sent to question author (${questionAuthor.name}): @${req.user.name} answered your question`);
       }
     }
 
@@ -180,6 +181,7 @@ router.post('/:answerId/comments', auth, async (req, res) => {
         isRead: false
       });
       await answer.author.save();
+      console.log(`Notification sent to answer author (${answer.author.name}): @${req.user.name} commented on your answer`);
     }
     // Notify mentioned users (if not self or answer author)
     for (const mentioned of mentionedUsers) {
@@ -192,6 +194,7 @@ router.post('/:answerId/comments', auth, async (req, res) => {
           isRead: false
         });
         await mentioned.save();
+        console.log(`Notification sent to mentioned user (${mentioned.name}): @${req.user.name} mentioned you in a comment`);
       }
     }
     // Return the new comment (populated)
@@ -201,6 +204,99 @@ router.post('/:answerId/comments', auth, async (req, res) => {
   } catch (error) {
     console.error('Add comment error:', error.message);
     res.status(500).json({ success: false, message: 'Server error while adding comment' });
+  }
+});
+
+// @route   POST /api/answers/:answerId/accept
+// @desc    Accept or unaccept an answer (only question owner can do this)
+// @access  Protected
+router.post('/:answerId/accept', auth, async (req, res) => {
+  try {
+    const { answerId } = req.params;
+
+    // Find the answer
+    const answer = await Answer.findById(answerId).populate('author', 'name');
+    if (!answer) {
+      return res.status(404).json({
+        success: false,
+        message: 'Answer not found'
+      });
+    }
+
+    // Find the question
+    const question = await Question.findById(answer.question);
+    if (!question) {
+      return res.status(404).json({
+        success: false,
+        message: 'Question not found'
+      });
+    }
+
+    // Check if the current user is the question owner
+    if (question.author.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Only the question owner can accept answers'
+      });
+    }
+
+    // Check if this answer is already accepted
+    const isCurrentlyAccepted = answer.isAccepted;
+
+    if (isCurrentlyAccepted) {
+      // Unaccept the answer
+      answer.isAccepted = false;
+      question.acceptedAnswer = null;
+      await answer.save();
+      await question.save();
+
+      res.json({
+        success: true,
+        message: 'Answer unaccepted successfully',
+        isAccepted: false
+      });
+    } else {
+      // First, unaccept any previously accepted answer
+      if (question.acceptedAnswer) {
+        const previouslyAccepted = await Answer.findById(question.acceptedAnswer);
+        if (previouslyAccepted) {
+          previouslyAccepted.isAccepted = false;
+          await previouslyAccepted.save();
+        }
+      }
+
+      // Accept this answer
+      answer.isAccepted = true;
+      question.acceptedAnswer = answer._id;
+      await answer.save();
+      await question.save();
+
+      // Send notification to answer author (if not self)
+      if (answer.author && answer.author._id.toString() !== req.user._id.toString()) {
+        const User = require('../models/User');
+        const answerAuthor = await User.findById(answer.author._id);
+        if (answerAuthor) {
+          answerAuthor.notifications.push({
+            message: `@${req.user.name} accepted your answer!`,
+            isRead: false
+          });
+          await answerAuthor.save();
+          console.log(`Notification sent to answer author (${answerAuthor.name}): @${req.user.name} accepted your answer!`);
+        }
+      }
+
+      res.json({
+        success: true,
+        message: 'Answer accepted successfully',
+        isAccepted: true
+      });
+    }
+  } catch (error) {
+    console.error('Accept answer error:', error.message);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while accepting answer'
+    });
   }
 });
 

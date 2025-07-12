@@ -238,7 +238,7 @@ const Dashboard = () => {
 
           {/* Stats Cards */}
           <Grid container spacing={3} mb={4}>
-            {[{ label: 'Questions Asked', value: stats.userQuestions }, { label: 'Answers Given', value: stats.userAnswers }, { label: 'Notifications', value: stats.unreadNotifications }, { label: 'Role', value: user?.role === 'admin' ? 'Admin' : 'Member' }].map((stat, i) => (
+            {[{ label: 'Questions Asked', value: stats.userQuestions }, { label: 'Answers Given', value: stats.userAnswers }].map((stat, i) => (
               <Grid item xs={12} sm={6} md={3} key={i}>
                 <Card
                   sx={{

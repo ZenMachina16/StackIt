@@ -7,8 +7,6 @@ import { Paper, Card, Box, Typography, Button, Chip, Alert, Divider } from '@mui
 import { styled } from '@mui/material/styles';
 import './QuestionDetail.css';
 
-
-
 const QuestionDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -25,9 +23,28 @@ const QuestionDetail = () => {
   const [commentTexts, setCommentTexts] = useState({}); // {answerId: text}
   const [commentSubmitting, setCommentSubmitting] = useState({}); // {answerId: bool}
   const [commentsShown, setCommentsShown] = useState({}); // {answerId: number}
+  const [acceptLoading, setAcceptLoading] = useState(null); // answerId being accepted
 
   const token = localStorage.getItem('token');
   const isAuthenticated = !!token;
+  const [currentUser, setCurrentUser] = useState(null);
+
+  // Get current user info
+  useEffect(() => {
+    const getCurrentUser = async () => {
+      if (!token) return;
+      try {
+        const config = { headers: { Authorization: `Bearer ${token}` } };
+        const res = await axios.get('/api/auth/me', config);
+        if (res.data.success) {
+          setCurrentUser(res.data.user);
+        }
+      } catch (err) {
+        console.error('Failed to get current user:', err);
+      }
+    };
+    getCurrentUser();
+  }, [token]);
 
   useEffect(() => {
     const fetchQuestion = async () => {
@@ -166,6 +183,42 @@ const QuestionDetail = () => {
     }
   };
 
+  // Handle accept/unaccept answer
+  const handleAcceptAnswer = async (answerId) => {
+    if (!isAuthenticated) {
+      setLoginPrompt(true);
+      return;
+    }
+    setAcceptLoading(answerId);
+    try {
+      const config = {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      };
+      const res = await axios.post(`/api/answers/${answerId}/accept`, {}, config);
+      if (res.data.success) {
+        // Update the question and answers in local state
+        setQuestion(prev => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            acceptedAnswer: res.data.isAccepted ? answerId : null,
+            answers: prev.answers.map(ans => ({
+              ...ans,
+              isAccepted: ans._id === answerId ? res.data.isAccepted : false
+            }))
+          };
+        });
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to accept answer.');
+    } finally {
+      setAcceptLoading(null);
+    }
+  };
+
   // Helper to highlight @mentions in comment text
   const highlightMentions = (html) => {
     return html.replace(/@([a-zA-Z0-9_]+)/g, '<span class="mention">@$1</span>');
@@ -216,7 +269,7 @@ const QuestionDetail = () => {
         <h3>Answers</h3>
         {question.answers.length === 0 && <p>No answers yet. Be the first to answer!</p>}
         {question.answers.map(answer => (
-          <div key={answer._id} className="answer-card">
+          <div key={answer._id} className={`answer-card ${answer.isAccepted ? 'accepted-answer' : ''}`}>
             <div className="vote-controls">
               <button
                 className="vote-btn"
@@ -231,8 +284,34 @@ const QuestionDetail = () => {
                 onClick={() => handleVote(answer._id, 'down')}
                 title={isAuthenticated ? 'Downvote' : 'Login to vote'}
               >▼</button>
+              
+              {/* Accept button - only show for question owner */}
+              {currentUser && question.author && currentUser.id === question.author._id && (
+                <button
+                  className={`accept-btn ${answer.isAccepted ? 'accepted' : ''}`}
+                  disabled={acceptLoading === answer._id}
+                  onClick={() => handleAcceptAnswer(answer._id)}
+                  title={answer.isAccepted ? 'Unaccept this answer' : 'Accept this answer'}
+                >
+                  {acceptLoading === answer._id ? '...' : (answer.isAccepted ? '✓' : '✓')}
+                </button>
+              )}
             </div>
             <div className="answer-content">
+              {answer.isAccepted && (
+                <div className="accepted-badge">
+                  <Typography variant="caption" sx={{ 
+                    color: '#2e7d32', 
+                    fontWeight: 'bold',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 0.5,
+                    mb: 1
+                  }}>
+                    ✓ Accepted Answer
+                  </Typography>
+                </div>
+              )}
               <div dangerouslySetInnerHTML={{ __html: answer.description }} />
               <Typography variant="caption" display="block" mt={1}>
                 By <b>{answer.author?.name || 'User'}</b>
