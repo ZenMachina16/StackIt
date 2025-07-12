@@ -1,46 +1,43 @@
 import React, { useState } from 'react';
+import {
+  Box,
+  TextField,
+  Button,
+  Typography,
+  Card,
+  Link as MuiLink,
+} from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-const SignUp = () => {
+const SignIn = () => {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: ''
-  });
+  const [formData, setFormData] = useState({ email: '', password: '' });
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const { name, email, password } = formData;
+  const { email, password } = formData;
 
-  const onChange = (e) => {
+  const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const onSubmit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setMessage('');
 
     try {
-      const config = {
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      };
-
-      const body = JSON.stringify({ name, email, password });
-      const res = await axios.post('/api/auth/register', body, config);
+      const config = { headers: { 'Content-Type': 'application/json' } };
+      const res = await axios.post('/api/auth/login', JSON.stringify(formData), config);
 
       if (res.data.success) {
-        setMessage('Registration successful! Redirecting to sign in...');
-        setTimeout(() => {
-          navigate('/login');
-        }, 2000);
+        localStorage.setItem('token', res.data.token);
+        setMessage('Login successful! Redirecting to dashboard...');
+        setTimeout(() => navigate('/dashboard'), 1500);
       }
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Registration failed';
+      const errorMessage = error.response?.data?.message || 'Login failed';
       setMessage(errorMessage);
     }
 
@@ -48,71 +45,134 @@ const SignUp = () => {
   };
 
   return (
-    <div className="container">
-      <h2>Sign Up</h2>
-      
-      {message && (
-        <div className={`alert ${message.includes('successful') ? 'alert-success' : 'alert-error'}`}>
-          {message}
-        </div>
-      )}
+    <Box
+      sx={{
+        background: 'linear-gradient(to right, #fff7f0, #ffe0c7)',
+        minHeight: '100vh',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        p: 2,
+      }}
+    >
+      <Card
+        sx={{
+          width: '100%',
+          maxWidth: 420,
+          padding: 4,
+          borderRadius: '30px',
+          background: 'rgba(255, 255, 255, 0.75)',
+          boxShadow: '0 8px 32px rgba(255, 165, 0, 0.25)',
+          backdropFilter: 'blur(10px)',
+          border: '1px solid rgba(255, 165, 0, 0.25)',
+        }}
+      >
+        <Typography variant="h5" align="center" gutterBottom sx={{ fontWeight: 'bold' }}>
+          Sign In
+        </Typography>
 
-      <form onSubmit={onSubmit}>
-        <div className="form-group">
-          <label htmlFor="name">Username</label>
-          <input
-            type="text"
-            id="name"
-            name="name"
-            value={name}
-            onChange={onChange}
-            required
-            placeholder="Enter your username"
-          />
-        </div>
+        {message && (
+          <Typography
+            variant="body2"
+            sx={{
+              mb: 2,
+              borderRadius: '12px',
+              padding: '10px',
+              textAlign: 'center',
+              backgroundColor: message.includes('successful') ? '#e6ffed' : '#ffe6e6',
+              color: message.includes('successful') ? '#2e7d32' : '#c62828',
+              border: `1px solid ${
+                message.includes('successful') ? '#81c784' : '#ef5350'
+              }`,
+            }}
+          >
+            {message}
+          </Typography>
+        )}
 
-        <div className="form-group">
-          <label htmlFor="email">Email</label>
-          <input
-            type="email"
-            id="email"
+        <form onSubmit={handleSubmit}>
+          <TextField
+            fullWidth
+            label="Email"
             name="email"
+            type="email"
             value={email}
-            onChange={onChange}
+            onChange={handleChange}
+            margin="normal"
             required
-            placeholder="Enter your email"
+            variant="outlined"
+            InputProps={{
+              sx: {
+                borderRadius: '15px',
+                color: '#333',
+              },
+            }}
+            InputLabelProps={{
+              sx: { color: '#666' },
+            }}
           />
-        </div>
 
-        <div className="form-group">
-          <label htmlFor="password">Password</label>
-          <input
-            type="password"
-            id="password"
+          <TextField
+            fullWidth
+            label="Password"
             name="password"
+            type="password"
             value={password}
-            onChange={onChange}
+            onChange={handleChange}
+            margin="normal"
             required
-            minLength="6"
-            placeholder="Enter your password (min 6 characters)"
+            variant="outlined"
+            InputProps={{
+              sx: {
+                borderRadius: '15px',
+                color: '#333',
+              },
+            }}
+            InputLabelProps={{
+              sx: { color: '#666' },
+            }}
           />
-        </div>
 
-        <button type="submit" className="btn" disabled={isLoading}>
-          {isLoading ? 'Creating Account...' : 'Sign Up'}
-        </button>
-      </form>
+          <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            sx={{
+              mt: 3,
+              py: 1.4,
+              fontWeight: 600,
+              fontSize: '16px',
+              borderRadius: '25px',
+              backgroundColor: '#ffa726',
+              boxShadow: '0 4px 12px rgba(255, 167, 38, 0.4)',
+              transition: 'all 0.3s ease',
+              '&:hover': {
+                backgroundColor: '#fb8c00',
+                boxShadow: '0 6px 18px rgba(251, 140, 0, 0.5)',
+              },
+            }}
+            disabled={isLoading}
+          >
+            {isLoading ? 'Signing In...' : 'Sign In'}
+          </Button>
+        </form>
 
-      <div className="text-center mt-3">
-        <p>
-          Already have an account? <Link to="/login">Sign in here</Link>
-        </p>
-        <p>
-          <Link to="/">Back to Home</Link>
-        </p>
-      </div>
-    </div>
+        <Box mt={3} textAlign="center">
+          <Typography variant="body2">
+            Don’t have an account?{' '}
+            <MuiLink component={Link} to="/signup" underline="hover" color="primary">
+              Sign Up
+            </MuiLink>
+          </Typography>
+          <Typography variant="body2" mt={1}>
+            <MuiLink component={Link} to="/" underline="hover" color="primary">
+              Back to Home
+            </MuiLink>
+          </Typography>
+        </Box>
+      </Card>
+    </Box>
   );
 };
 
-export default SignUp; 
+export default SignIn;

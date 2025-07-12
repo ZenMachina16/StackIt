@@ -1,45 +1,40 @@
 import React, { useState } from 'react';
+import {
+  Box,
+  TextField,
+  Button,
+  Typography,
+  Card,
+  Link as MuiLink,
+} from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 const SignIn = () => {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    email: '',
-    password: ''
-  });
+  const [formData, setFormData] = useState({ email: '', password: '' });
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   const { email, password } = formData;
 
-  const onChange = (e) => {
+  const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const onSubmit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setMessage('');
 
     try {
-      const config = {
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      };
-
-      const body = JSON.stringify({ email, password });
-      const res = await axios.post('/api/auth/login', body, config);
+      const config = { headers: { 'Content-Type': 'application/json' } };
+      const res = await axios.post('/api/auth/login', JSON.stringify(formData), config);
 
       if (res.data.success) {
-        // Store JWT token in localStorage
         localStorage.setItem('token', res.data.token);
-        
         setMessage('Login successful! Redirecting to dashboard...');
-        setTimeout(() => {
-          navigate('/dashboard');
-        }, 1500);
+        setTimeout(() => navigate('/dashboard'), 1500);
       }
     } catch (error) {
       const errorMessage = error.response?.data?.message || 'Login failed';
@@ -50,57 +45,131 @@ const SignIn = () => {
   };
 
   return (
-    <div className="container">
-      <h2>Sign In</h2>
-      
-      {message && (
-        <div className={`alert ${message.includes('successful') ? 'alert-success' : 'alert-error'}`}>
-          {message}
-        </div>
-      )}
+    <Box
+      sx={{
+        background: 'linear-gradient(to right, #fff7f0, #ffe0c7)',
+        minHeight: '100vh',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        p: 2,
+      }}
+    >
+      <Card
+        elevation={8}
+        sx={{
+          backdropFilter: 'blur(12px)',
+          background: 'rgba(255, 255, 255, 0.8)',
+          border: '1px solid rgba(255, 165, 0, 0.2)',
+          borderRadius: '30px',
+          padding: 4,
+          width: '100%',
+          maxWidth: 420,
+        }}
+      >
+        <Typography variant="h5" align="center" fontWeight="bold" gutterBottom>
+          Sign In
+        </Typography>
 
-      <form onSubmit={onSubmit}>
-        <div className="form-group">
-          <label htmlFor="email">Email</label>
-          <input
-            type="email"
-            id="email"
+        {message && (
+          <Typography
+            variant="body2"
+            sx={{
+              mb: 2,
+              borderRadius: '15px',
+              p: 1.5,
+              fontSize: '14px',
+              textAlign: 'center',
+              backgroundColor: message.includes('successful') ? '#e6ffe6' : '#ffe6e6',
+              color: message.includes('successful') ? '#2e7d32' : '#c62828',
+              border: `1px solid ${
+                message.includes('successful') ? '#a5d6a7' : '#ef9a9a'
+              }`,
+            }}
+          >
+            {message}
+          </Typography>
+        )}
+
+        <form onSubmit={handleSubmit}>
+          <TextField
+            fullWidth
+            label="Email"
             name="email"
+            type="email"
             value={email}
-            onChange={onChange}
+            onChange={handleChange}
+            margin="normal"
             required
-            placeholder="Enter your email"
+            InputProps={{
+              sx: {
+                borderRadius: '20px',
+              },
+            }}
+            InputLabelProps={{
+              sx: { color: '#777' },
+            }}
           />
-        </div>
 
-        <div className="form-group">
-          <label htmlFor="password">Password</label>
-          <input
-            type="password"
-            id="password"
+          <TextField
+            fullWidth
+            label="Password"
             name="password"
+            type="password"
             value={password}
-            onChange={onChange}
+            onChange={handleChange}
+            margin="normal"
             required
-            placeholder="Enter your password"
+            InputProps={{
+              sx: {
+                borderRadius: '20px',
+              },
+            }}
+            InputLabelProps={{
+              sx: { color: '#777' },
+            }}
           />
-        </div>
 
-        <button type="submit" className="btn" disabled={isLoading}>
-          {isLoading ? 'Signing In...' : 'Sign In'}
-        </button>
-      </form>
+          <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            disabled={isLoading}
+            sx={{
+              mt: 3,
+              py: 1.4,
+              fontWeight: 'bold',
+              fontSize: '16px',
+              borderRadius: '30px',
+              backgroundColor: '#ffa726',
+              boxShadow: '0 4px 12px rgba(255, 167, 38, 0.4)',
+              transition: '0.3s ease-in-out',
+              '&:hover': {
+                backgroundColor: '#fb8c00',
+                boxShadow: '0 6px 18px rgba(251, 140, 0, 0.5)',
+              },
+            }}
+          >
+            {isLoading ? 'Signing In...' : 'Sign In'}
+          </Button>
+        </form>
 
-      <div className="text-center mt-3">
-        <p>
-          Don't have an account? <Link to="/signup">Sign up here</Link>
-        </p>
-        <p>
-          <Link to="/">Back to Home</Link>
-        </p>
-      </div>
-    </div>
+        <Box mt={3} textAlign="center">
+          <Typography variant="body2">
+            Don’t have an account?{' '}
+            <MuiLink component={Link} to="/signup" underline="hover" color="primary">
+              Sign Up
+            </MuiLink>
+          </Typography>
+          <Typography variant="body2" mt={1}>
+            <MuiLink component={Link} to="/" underline="hover" color="primary">
+              Back to Home
+            </MuiLink>
+          </Typography>
+        </Box>
+      </Card>
+    </Box>
   );
 };
 
-export default SignIn; 
+export default SignIn;
