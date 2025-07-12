@@ -51,6 +51,7 @@ router.post('/:questionId', auth, async (req, res) => {
           isRead: false
         });
         await questionAuthor.save();
+        console.log(`Notification sent to question author (${questionAuthor.name}): @${req.user.name} answered your question`);
       }
     }
 
@@ -179,6 +180,7 @@ router.post('/:answerId/comments', auth, async (req, res) => {
         isRead: false
       });
       await answer.author.save();
+      console.log(`Notification sent to answer author (${answer.author.name}): @${req.user.name} commented on your answer`);
     }
     // Notify mentioned users (if not self or answer author)
     for (const mentioned of mentionedUsers) {
@@ -191,6 +193,7 @@ router.post('/:answerId/comments', auth, async (req, res) => {
           isRead: false
         });
         await mentioned.save();
+        console.log(`Notification sent to mentioned user (${mentioned.name}): @${req.user.name} mentioned you in a comment`);
       }
     }
     // Return the new comment (populated)
