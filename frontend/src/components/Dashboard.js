@@ -9,10 +9,13 @@ import {
   CircularProgress,
   Alert,
   Avatar,
+  IconButton,
 } from '@mui/material';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { toast } from 'react-hot-toast';
 
 const COLORS = ['#FF8C42', '#FFCDAB', '#FFD6A5'];
 
@@ -27,6 +30,9 @@ const Dashboard = () => {
     userAnswers: 0,
     unreadNotifications: 0,
   });
+  const [questions, setQuestions] = useState([]);
+  const [answers, setAnswers] = useState([]);
+  const [activityLoading, setActivityLoading] = useState(true);
 
   useEffect(() => {
     const verifyToken = async () => {
@@ -60,6 +66,79 @@ const Dashboard = () => {
 
     verifyToken();
   }, [navigate]);
+
+  useEffect(() => {
+  const fetchStats = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    setActivityLoading(true);
+    try {
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      const res = await axios.get('/api/stats/me', config);
+      if (res.data.success) {
+        const stats = res.data.stats;
+        setStats((prev) => ({
+          ...prev,
+          userQuestions: stats.questionCount,
+          userAnswers: stats.answerCount,
+        }));
+
+        const mergedQuestions = stats.questions.map((desc, index) => ({
+          _id: stats.questionIDs[index],
+          title: desc,
+        }));
+
+        const mergedAnswers = stats.answers.map((desc, index) => ({
+          _id: stats.answerIDs[index],
+          description: desc,
+        }));
+
+        setQuestions(mergedQuestions);
+        setAnswers(mergedAnswers);
+      }
+    } catch (err) {
+      console.error('Failed to fetch stats:', err.message);
+    }
+    setActivityLoading(false);
+  };
+  fetchStats();
+}, []);
+
+  const stripHTML = (html) => {
+  const tempDiv = document.createElement("div");
+  tempDiv.innerHTML = html;
+  return tempDiv.textContent || tempDiv.innerText || "";
+};
+
+  const handleDeleteQuestion = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this question?')) return;
+    const token = localStorage.getItem('token');
+    try {
+      await axios.delete(`/api/questions/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setQuestions((prev) => prev.filter((q) => q._id !== id));
+      setStats((prev) => ({ ...prev, userQuestions: prev.userQuestions - 1 }));
+    } catch {
+      alert('Failed to delete question.');
+    }
+  };
+
+  const handleDeleteAnswer = async (id) => {
+  if (!window.confirm('Are you sure you want to delete this answer?')) return;
+  const token = localStorage.getItem('token');
+  try {
+    await axios.delete(`/api/answers/${id}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    setAnswers((prev) => prev.filter((a) => a._id !== id));
+    setStats((prev) => ({ ...prev, userAnswers: prev.userAnswers - 1 }));
+    toast.success('Answer deleted successfully');
+  } catch {
+    toast.error('Failed to delete answer');
+  }
+};
+
 
   if (loading) {
     return (
@@ -184,40 +263,104 @@ const Dashboard = () => {
 
           {/* Chart Section */}
           <Box mb={5}>
-            <Typography variant="h6" mb={2}>
-              Activity Breakdown
-            </Typography>
-            <ResponsiveContainer width="100%" height={250}>
-              <PieChart>
-                <Pie
-                  data={chartData}
-                  dataKey="value"
-                  nameKey="name"
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={80}
-                  label
-                >
-                  {chartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          </Box>
+                      <Typography variant="h6" mb={2}>
+                        Activity Breakdown
+                      </Typography>
+                      <ResponsiveContainer width="100%" height={250}>
+                        <PieChart>
+                          <Pie
+                            data={chartData}
+                            dataKey="value"
+                            nameKey="name"
+                            cx="50%"
+                            cy="50%"
+                            outerRadius={80}
+                            label
+                          >
+                            {chartData.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                            ))}
+                          </Pie>
+                          <Tooltip />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </Box>
 
-          {/* Recent Activity */}
-          <Box mb={5}>
+        {/* My Questions */}
+        <Box mb={5}>
+  <Typography variant="h6" mb={2}>
+    My Questions
+  </Typography>
+
+  {activityLoading ? (
+    <CircularProgress size={24} />
+  ) : questions.length === 0 ? (
+    <Typography variant="body2" color="#8b5d3d" mb={2}>
+      You haven't asked any questions yet.
+    </Typography>
+  ) : (
+    <Box>
+      {questions.map((q, index) => (
+        <Card key={q._id} sx={{ mb: 2, background: '#fffbe6', borderRadius: 2 }}>
+          <CardContent>
+            <Typography variant="subtitle1" fontWeight="bold">
+              Question {index + 1}
+            </Typography>
+
+            <Typography variant="body2" color="text.secondary" mb={1}>
+              {stripHTML(q.title)}
+            </Typography>
+
+            <IconButton
+              size="small"
+              color="error"
+              onClick={() => handleDeleteQuestion(q._id)}
+              aria-label="delete question"
+            >
+              <DeleteIcon />
+            </IconButton>
+          </CardContent>
+        </Card>
+      ))}
+    </Box>
+  )}
+</Box>
+
+                    {/* My Answers */}
+                    <Box mb={5}>
             <Typography variant="h6" mb={2}>
-              Recent Activity
+              My Answers
             </Typography>
-            <Typography variant="body2" color="#8b5d3d" mb={2}>
-              No recent activity found.
-            </Typography>
-            <Button variant="outlined" component={Link} to="/" sx={{ color: '#4b2e2e', borderColor: '#4b2e2e' }}>
-              Explore Questions
-            </Button>
+            {activityLoading ? (
+              <CircularProgress size={24} />
+            ) : answers.length === 0 ? (
+              <Typography variant="body2" color="#8b5d3d" mb={2}>
+                You haven't given any answers yet.
+              </Typography>
+            ) : (
+              <Box>
+                {answers.map((answer, index) => (
+                  <Card key={index} sx={{ mb: 2, background: '#e6fff7', borderRadius: 2 }}>
+                    <CardContent>
+                      <Typography variant="subtitle1" fontWeight="bold">
+                        Answer {index + 1}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary" mb={1}>
+                        {stripHTML(answer.description)}
+                      </Typography>
+                      <IconButton
+                                                size="small"
+                                                color="error"
+                                                onClick={() => handleDeleteAnswer(answer._id)}
+                                                aria-label="delete question"
+                                              >
+                                                <DeleteIcon />
+                                              </IconButton>
+                    </CardContent>
+                  </Card>
+                ))}
+              </Box>
+            )}
           </Box>
 
           {/* Admin Panel */}
@@ -243,4 +386,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard; 
+export default Dashboard;

@@ -4,6 +4,7 @@ const User = require('../models/User');
 const Tag = require('../models/Tag');
 const Answer = require('../models/Answer');
 const auth = require('../middleware/auth');
+const { deleteQuestion } = require('../controllers/questionController');
 
 const router = express.Router();
 
@@ -68,26 +69,67 @@ router.post('/', auth, async (req, res) => {
 // @route   GET /api/questions
 // @desc    List questions with pagination
 // @access  Public
+// @route   GET /api/questions
+// @desc    List questions with pagination, filter, and search
+// @access  Public
 router.get('/', async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
-    // Get total count for pagination
-    const totalQuestions = await Question.countDocuments();
-    const totalPages = Math.ceil(totalQuestions / limit);
+    const filter = req.query.filter || 'newest';  // 'newest' | 'unanswered'
+    const search = req.query.search || '';
+    const tagName = req.query.tag || '';
 
-    // Get questions with pagination
-    const questions = await Question.find()
+    const query = {};
+
+    // 🔍 Search title (regex, case-insensitive)
+    if (search) {
+      query.title = { $regex: search, $options: 'i' };
+    }
+
+    // 🧠 Unanswered (answers array size = 0)
+    if (filter === 'unanswered') {
+      query.answers = { $size: 0 };
+    }
+
+    // 🏷️ Tag filter
+    if (tagName) {
+      const tagDoc = await Tag.findOne({ name: tagName.toLowerCase().trim() });
+      if (tagDoc) {
+        query.tags = tagDoc._id;
+      } else {
+        // No tag found → return empty response early
+        return res.json({
+          success: true,
+          questions: [],
+          pagination: {
+            currentPage: page,
+            totalPages: 0,
+            totalQuestions: 0,
+            hasNextPage: false,
+            hasPrevPage: false
+          }
+        });
+      }
+    }
+
+    // 🧾 Sorting
+    const sort = { createdAt: -1 }; // Always sort by newest
+
+    // 📦 Fetch questions
+    const questions = await Question.find(query)
       .populate('tags', 'name')
-      .populate('author', 'name email')
-      .populate('acceptedAnswer')
-      .sort({ createdAt: -1 })
+      .populate('author', 'name')
+      .sort(sort)
       .skip(skip)
       .limit(limit);
 
-    res.json({
+    const totalQuestions = await Question.countDocuments(query);
+    const totalPages = Math.ceil(totalQuestions / limit);
+
+    return res.json({
       success: true,
       questions,
       pagination: {
@@ -99,13 +141,14 @@ router.get('/', async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Get questions error:', error.message);
-    res.status(500).json({
+    console.error('Error in GET /api/questions:', error);
+    return res.status(500).json({
       success: false,
       message: 'Server error while fetching questions'
     });
   }
 });
+
 
 // @route   GET /api/questions/:id
 // @desc    Fetch one question by ID with full population
@@ -219,5 +262,8 @@ router.put('/:id/accept/:answerId', auth, async (req, res) => {
     });
   }
 });
+
+// DELETE /api/answers/:id
+router.delete('/:id', auth, deleteQuestion);
 
 module.exports = router; 

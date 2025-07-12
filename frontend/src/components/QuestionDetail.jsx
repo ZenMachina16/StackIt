@@ -5,6 +5,9 @@ import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import { Paper, Card, Box, Typography, Button, Chip, Alert, Divider } from '@mui/material';
 import { styled } from '@mui/material/styles';
+import './QuestionDetail.css';
+
+
 
 const QuestionDetail = () => {
   const { id } = useParams();

@@ -2,6 +2,7 @@ const express = require('express');
 const Answer = require('../models/Answer');
 const Question = require('../models/Question');
 const auth = require('../middleware/auth');
+const { deleteAnswer } = require('../controllers/answerController');
 
 const router = express.Router();
 
@@ -203,4 +204,8 @@ router.post('/:answerId/comments', auth, async (req, res) => {
   }
 });
 
+// DELETE /api/answers/:id
+router.delete('/:id', auth, deleteAnswer);
+
 module.exports = router; 
+

@@ -1,5 +1,6 @@
 const express = require('express');
 const Tag = require('../models/Tag');
+const Question = require('../models/Question'); // Needed for tag usage aggregation
 const auth = require('../middleware/auth');
 
 const router = express.Router();
@@ -75,4 +76,50 @@ router.post('/', auth, async (req, res) => {
   }
 });
 
-module.exports = router; 
+// @route   GET /api/tags/popular
+// @desc    Get Top 15 most used tags in questions
+// @access  Public
+router.get('/popular', async (req, res) => {
+  try {
+    const tagsWithCount = await Question.aggregate([
+      { $unwind: "$tags" },
+      {
+        $group: {
+          _id: "$tags",
+          count: { $sum: 1 }
+        }
+      },
+      {
+        $lookup: {
+          from: "tags",
+          localField: "_id",
+          foreignField: "_id",
+          as: "tagDetails"
+        }
+      },
+      { $unwind: "$tagDetails" },
+      {
+        $project: {
+          _id: "$tagDetails._id",
+          name: "$tagDetails.name",
+          count: 1
+        }
+      },
+      { $sort: { count: -1 } },
+      { $limit: 15 }
+    ]);
+
+    res.json({
+      success: true,
+      tags: tagsWithCount
+    });
+  } catch (error) {
+    console.error('Get popular tags error:', error.message);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while fetching popular tags'
+    });
+  }
+});
+
+module.exports = router;
