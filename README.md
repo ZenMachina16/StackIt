@@ -1,4 +1,4 @@
-Problem Statement - 3: StackIt – A Minimal Q&A Forum Platform
+Problem Statement - 2: StackIt – A Minimal Q&A Forum Platform
 ## Members
 1. Binayak Bhattacharjee - binayakb1604@gmail.com
 2. Atharva Phadtare - atharvamp04@gmail.com
