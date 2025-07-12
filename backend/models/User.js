@@ -18,9 +18,9 @@ const notificationSchema = new mongoose.Schema({
 });
 
 const userSchema = new mongoose.Schema({
-  username: {
+  name: {
     type: String,
-    required: [true, 'Please provide a username'],
+    required: [true, 'Please provide a name'],
     unique: true,
     trim: true
   },

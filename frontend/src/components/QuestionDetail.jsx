@@ -16,6 +16,11 @@ const QuestionDetail = () => {
   const [loginPrompt, setLoginPrompt] = useState(false);
   const [votedAnswers, setVotedAnswers] = useState({}); // {answerId: 'up'|'down'}
 
+  // Comments state for each answer
+  const [commentTexts, setCommentTexts] = useState({}); // {answerId: text}
+  const [commentSubmitting, setCommentSubmitting] = useState({}); // {answerId: bool}
+  const [commentsShown, setCommentsShown] = useState({}); // {answerId: number}
+
   const token = localStorage.getItem('token');
   const isAuthenticated = !!token;
 
@@ -112,6 +117,55 @@ const QuestionDetail = () => {
     }
   };
 
+  // Add comment to answer
+  const handleAddComment = async (answerId) => {
+    if (!isAuthenticated) {
+      setLoginPrompt(true);
+      return;
+    }
+    const text = commentTexts[answerId];
+    if (!text || text === '<p><br></p>') return;
+    setCommentSubmitting(prev => ({ ...prev, [answerId]: true }));
+    try {
+      const config = {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      };
+      const body = JSON.stringify({ text });
+      const res = await axios.post(`/api/answers/${answerId}/comments`, body, config);
+      if (res.data.success) {
+        setQuestion(prev => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            answers: prev.answers.map(ans => {
+              if (ans._id === answerId) {
+                return {
+                  ...ans,
+                  comments: ans.comments ? [res.data.comment, ...ans.comments] : [res.data.comment]
+                };
+              }
+              return ans;
+            })
+          };
+        });
+        setCommentTexts(prev => ({ ...prev, [answerId]: '' }));
+        setCommentsShown(prev => ({ ...prev, [answerId]: 5 }));
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to add comment.');
+    } finally {
+      setCommentSubmitting(prev => ({ ...prev, [answerId]: false }));
+    }
+  };
+
+  // Helper to highlight @mentions in comment text
+  const highlightMentions = (html) => {
+    return html.replace(/@([a-zA-Z0-9_]+)/g, '<span class="mention">@$1</span>');
+  };
+
   // Quill config
   const quillModules = {
     toolbar: [
@@ -148,7 +202,7 @@ const QuestionDetail = () => {
         </div>
         <div className="question-description" dangerouslySetInnerHTML={{ __html: question.description }} />
         <div className="question-meta">
-          <span>Asked by <b>{question.author.username}</b></span>
+          <span>Asked by <b>{question.author?.name || 'Unknown'}</b></span>
         </div>
       </div>
 
@@ -176,7 +230,49 @@ const QuestionDetail = () => {
             <div className="answer-content">
               <div dangerouslySetInnerHTML={{ __html: answer.description }} />
               <div className="answer-meta">
-                <span>By <b>{answer.author?.username || 'User'}</b></span>
+                <span>By <b>{answer.author?.name || 'Unknown'}</b></span>
+              </div>
+              {/* Comments Section */}
+              <div className="comments-section">
+                <h5>Comments</h5>
+                {(answer.comments && answer.comments.length > 0) ? (
+                  <>
+                    {(answer.comments.slice(0, commentsShown[answer._id] || 5)).map((comment, idx) => (
+                      <div key={comment._id || idx} className="comment-item">
+                        <span className="comment-user">@{comment.user?.name || 'Unknown'}</span>:
+                        <span className="comment-text" dangerouslySetInnerHTML={{ __html: highlightMentions(comment.text) }} />
+                        <span className="comment-date">{new Date(comment.createdAt).toLocaleString()}</span>
+                      </div>
+                    ))}
+                    {answer.comments.length > (commentsShown[answer._id] || 5) && (
+                      <button className="btn btn-secondary btn-sm" onClick={() => setCommentsShown(prev => ({ ...prev, [answer._id]: (prev[answer._id] || 5) + 5 }))}>
+                        Load more comments
+                      </button>
+                    )}
+                  </>
+                ) : (
+                  <div className="no-comments">No comments yet.</div>
+                )}
+                {/* Add Comment Editor */}
+                <div className="add-comment-editor">
+                  <ReactQuill
+                    theme="snow"
+                    value={commentTexts[answer._id] || ''}
+                    onChange={val => setCommentTexts(prev => ({ ...prev, [answer._id]: val }))}
+                    modules={{ toolbar: [['bold', 'italic', 'underline'], ['link'] ] }}
+                    formats={['bold', 'italic', 'underline', 'link']}
+                    placeholder="Add a comment... Use @username to mention."
+                    style={{ height: '60px', marginBottom: '10px' }}
+                  />
+                  <button
+                    className="btn btn-primary btn-sm"
+                    style={{ marginTop: 4 }}
+                    disabled={commentSubmitting[answer._id] || !isAuthenticated}
+                    onClick={() => handleAddComment(answer._id)}
+                  >
+                    {commentSubmitting[answer._id] ? 'Posting...' : 'Post Comment'}
+                  </button>
+                </div>
               </div>
             </div>
           </div>

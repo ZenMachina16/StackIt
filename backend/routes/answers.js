@@ -43,7 +43,7 @@ router.post('/:questionId', auth, async (req, res) => {
 
     // Populate the created answer
     const populatedAnswer = await Answer.findById(answer._id)
-      .populate('author', 'username email role')
+      .populate('author', 'name email role')
       .populate('question', 'title');
 
     res.status(201).json({
@@ -114,7 +114,7 @@ router.post('/:answerId/vote', auth, async (req, res) => {
 
     // Return updated answer with population
     const updatedAnswer = await Answer.findById(answerId)
-      .populate('author', 'username email role')
+      .populate('author', 'name email role')
       .populate('question', 'title');
 
     res.json({
@@ -128,6 +128,65 @@ router.post('/:answerId/vote', auth, async (req, res) => {
       success: false,
       message: 'Server error while voting on answer'
     });
+  }
+});
+
+// @route   POST /api/answers/:answerId/comments
+// @desc    Add a comment to an answer (with mentions and notifications)
+// @access  Protected
+router.post('/:answerId/comments', auth, async (req, res) => {
+  try {
+    const { answerId } = req.params;
+    const { text } = req.body;
+    if (!text || !text.trim()) {
+      return res.status(400).json({ success: false, message: 'Comment text is required' });
+    }
+    const answer = await Answer.findById(answerId).populate('author');
+    if (!answer) {
+      return res.status(404).json({ success: false, message: 'Answer not found' });
+    }
+    // Parse mentions from text (e.g., @name)
+    const mentionMatches = text.match(/@([a-zA-Z0-9_]+)/g) || [];
+    const names = mentionMatches.map(m => m.slice(1));
+    // Find mentioned users
+    const User = require('../models/User');
+    const mentionedUsers = await User.find({ name: { $in: names } });
+    const mentionIds = mentionedUsers.map(u => u._id);
+    // Add comment
+    answer.comments.push({
+      user: req.user._id,
+      text,
+      mentions: mentionIds
+    });
+    await answer.save();
+    // Notify answer author (if not self)
+    if (answer.author && answer.author._id.toString() !== req.user._id.toString()) {
+      answer.author.notifications.push({
+        message: `@${req.user.name} commented on your answer`,
+        isRead: false
+      });
+      await answer.author.save();
+    }
+    // Notify mentioned users (if not self or answer author)
+    for (const mentioned of mentionedUsers) {
+      if (
+        mentioned._id.toString() !== req.user._id.toString() &&
+        (!answer.author || mentioned._id.toString() !== answer.author._id.toString())
+      ) {
+        mentioned.notifications.push({
+          message: `@${req.user.name} mentioned you in a comment`,
+          isRead: false
+        });
+        await mentioned.save();
+      }
+    }
+    // Return the new comment (populated)
+    const populatedAnswer = await Answer.findById(answer._id).populate('comments.user', 'name');
+    const newComment = populatedAnswer.comments[populatedAnswer.comments.length - 1];
+    res.status(201).json({ success: true, comment: newComment });
+  } catch (error) {
+    console.error('Add comment error:', error.message);
+    res.status(500).json({ success: false, message: 'Server error while adding comment' });
   }
 });
 
