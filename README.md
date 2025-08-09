@@ -1,10 +1,4 @@
-Problem Statement - 2: StackIt – A Minimal Q&A Forum Platform
-## Members
-1. Binayak Bhattacharjee - binayakb1604@gmail.com
-2. Atharva Phadtare - atharvamp04@gmail.com
-3. Harsh Kapse - kapseharsht@gmail.com
-4. Tejas Patil - 2022.tejas.patil@ves.ac.in
-# Odoo-Hackathon: StackIt – A Minimal Q&A Forum Platform
+ StackIt – A Minimal Q&A Forum Platform
 
 This is a full-stack Q&A platform built with the MERN stack (MongoDB, Express, React, Node.js). It allows users to ask questions, post answers, comment, and vote on both questions and answers.
 
