@@ -41,9 +41,42 @@ const userSchema = new mongoose.Schema({
     enum: ['user', 'admin'],
     default: 'user'
   },
+  avatar: {
+    type: String,
+    default: ''
+  },
+  bio: {
+    type: String,
+    default: '',
+    maxlength: 500
+  },
+  location: {
+    type: String,
+    default: ''
+  },
+  website: {
+    type: String,
+    default: ''
+  },
   notifications: [notificationSchema]
 }, {
-  timestamps: true
+  timestamps: true,
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
+});
+
+// Virtual for getting user's questions
+userSchema.virtual('questions', {
+  ref: 'Question',
+  localField: '_id',
+  foreignField: 'author'
+});
+
+// Virtual for getting user's answers
+userSchema.virtual('answers', {
+  ref: 'Answer',
+  localField: '_id',
+  foreignField: 'author'
 });
 
 // Hash password before saving
@@ -63,4 +96,4 @@ userSchema.methods.comparePassword = async function(candidatePassword) {
 
 const User = mongoose.model('User', userSchema);
 
-module.exports = User; 
+module.exports = User;
