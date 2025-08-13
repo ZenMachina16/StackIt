@@ -3,13 +3,6 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 require('dotenv').config();
 
-// Import routes
-const authRoutes = require('./routes/auth');
-const questionsRoutes = require('./routes/questions');
-const answersRoutes = require('./routes/answers');
-const tagsRoutes = require('./routes/tags');
-const notificationsRoutes = require('./routes/notifications');
-
 const app = express();
 
 // Middleware
@@ -19,13 +12,20 @@ app.use(express.json());
 // Connect to MongoDB
 const connectDB = async () => {
   try {
-    const conn = await mongoose.connect(process.env.MONGODB_URI);
+    const conn = await mongoose.connect(process.env.MONGO_URI);
     console.log(`MongoDB Connected: ${conn.connection.host}`);
   } catch (error) {
     console.error('MongoDB connection error:', error.message);
     process.exit(1);
   }
 };
+
+// Import routes
+const authRoutes = require('./routes/auth');
+const questionsRoutes = require('./routes/questions');
+const answersRoutes = require('./routes/answers');
+const tagsRoutes = require('./routes/tags');
+const notificationsRoutes = require('./routes/notifications');
 
 // Routes
 app.use('/api/auth', authRoutes);
@@ -66,4 +66,4 @@ const startServer = async () => {
   });
 };
 
-startServer(); 
+startServer();

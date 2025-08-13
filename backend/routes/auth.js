@@ -109,12 +109,26 @@ router.post('/login', async (req, res) => {
 // @access  Private
 router.get('/me', auth, async (req, res) => {
   try {
+    // Get user with questions and answers populated
+    const user = await User.findById(req.user._id)
+      .select('-password')
+      .populate('questions')
+      .populate('answers');
+
     res.json({
       success: true,
       user: {
-        id: req.user._id,
-        name: req.user.name,
-        email: req.user.email
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        avatar: user.avatar,
+        bio: user.bio,
+        location: user.location,
+        website: user.website,
+        createdAt: user.createdAt,
+        questions: user.questions,
+        answers: user.answers
       }
     });
   } catch (error) {
@@ -122,6 +136,48 @@ router.get('/me', auth, async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Server error'
+    });
+  }
+});
+
+// @route   PUT /api/auth/profile
+// @desc    Update user profile
+// @access  Private
+router.put('/profile', auth, async (req, res) => {
+  try {
+    const { name, avatar, bio, location, website } = req.body;
+    
+    // Find user and update profile
+    const user = await User.findById(req.user._id);
+    
+    if (name) user.name = name;
+    if (avatar) user.avatar = avatar;
+    if (bio !== undefined) user.bio = bio;
+    if (location !== undefined) user.location = location;
+    if (website !== undefined) user.website = website;
+    
+    await user.save();
+    
+    res.json({
+      success: true,
+      message: 'Profile updated successfully',
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        avatar: user.avatar,
+        bio: user.bio,
+        location: user.location,
+        website: user.website,
+        createdAt: user.createdAt
+      }
+    });
+  } catch (error) {
+    console.error('Update profile error:', error.message);
+    res.status(500).json({
+      success: false,
+      message: 'Server error during profile update'
     });
   }
 });
@@ -164,4 +220,4 @@ router.patch('/notifications/mark-read', auth, async (req, res) => {
   }
 });
 
-module.exports = router; 
+module.exports = router;

@@ -20,6 +20,7 @@ import {
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import './Header.css';
+import ProfileLink from './ProfileLink';
 
 const Header = () => {
   const navigate = useNavigate();
@@ -150,24 +151,7 @@ const Header = () => {
                 >
                   Dashboard
                 </MuiLink>
-                <MuiLink
-                  component={Link}
-                  to="/profile"
-                  underline="none"
-                  sx={{
-                    color: '#333',
-                    fontWeight: 600,
-                    fontSize: '1rem',
-                    px: 2,
-                    py: 1,
-                    borderRadius: '8px',
-                    '&:hover': {
-                      backgroundColor: 'rgba(255,255,255,0.4)',
-                    },
-                  }}
-                >
-                  Profile
-                </MuiLink>
+                <ProfileLink />
                 <Box sx={{ position: 'relative', mx: 1 }}>
                   <IconButton 
                     onClick={handleBellClick}
@@ -371,4 +355,4 @@ const Header = () => {
   );
 };
 
-export default Header; 
+export default Header;
