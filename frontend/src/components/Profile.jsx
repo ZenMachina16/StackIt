@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import api from '../index';
+//import api from '../index';
 
 const Profile = () => {
   const navigate = useNavigate();
