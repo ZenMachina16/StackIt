@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import api from '../index';
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -24,7 +25,7 @@ const Profile = () => {
           }
         };
 
-        const res = await axios.get('/api/auth/me', config);
+        const res = await api.get('/auth/me', config);
         
         if (res.data.success) {
           setUser(res.data.user);
