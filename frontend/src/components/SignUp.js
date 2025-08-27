@@ -9,7 +9,7 @@ import {
 } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import api from '../index';
+//import api from '../index';
 
 const SignUp = () => {
   const navigate = useNavigate();
