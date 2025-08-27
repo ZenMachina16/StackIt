@@ -10,6 +10,8 @@ import {
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
+const API_BASE_URL = process.env.REACT_APP_BASE_URL;
+
 const SignUp = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -33,7 +35,11 @@ const SignUp = () => {
 
     try {
       const config = { headers: { 'Content-Type': 'application/json' } };
-      const res = await axios.post('/api/auth/register', JSON.stringify(formData), config);
+      const res = await axios.post(
+        `${API_BASE_URL}/api/auth/register`,
+        formData,
+        config
+      );
 
       if (res.data.success) {
         setMessage('Registration successful! Redirecting...');
@@ -42,7 +48,8 @@ const SignUp = () => {
         setMessage('Registration failed');
       }
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Something went wrong.';
+      const errorMessage =
+        error.response?.data?.message || 'Something went wrong.';
       setMessage(errorMessage);
     }
 
@@ -85,9 +92,13 @@ const SignUp = () => {
               p: 1.5,
               fontSize: '14px',
               textAlign: 'center',
-              backgroundColor: message.includes('successful') ? '#e6ffe6' : '#ffe6e6',
+              backgroundColor: message.includes('successful')
+                ? '#e6ffe6'
+                : '#ffe6e6',
               color: message.includes('successful') ? '#2e7d32' : '#c62828',
-              border: `1px solid ${message.includes('successful') ? '#a5d6a7' : '#ef9a9a'}`,
+              border: `1px solid ${
+                message.includes('successful') ? '#a5d6a7' : '#ef9a9a'
+              }`,
             }}
           >
             {message}

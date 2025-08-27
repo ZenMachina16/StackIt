@@ -13,6 +13,7 @@ import {
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+const API_BASE_URL = process.env.REACT_APP_BASE_URL;
 
 const COLORS = ['#FF8C42', '#FFCDAB', '#FFD6A5'];
 
@@ -41,7 +42,7 @@ const Dashboard = () => {
           headers: { Authorization: `Bearer ${token}` },
         };
 
-        const res = await axios.get('/api/auth/me', config);
+        const res = await axios.get(`${API_BASE_URL}/api/auth/me`, config);
         if (res.data.success) {
           setUser(res.data.user);
           const unreadNotifications = res.data.user.notifications

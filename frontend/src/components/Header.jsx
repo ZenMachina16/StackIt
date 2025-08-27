@@ -21,6 +21,7 @@ import {
 import MenuIcon from '@mui/icons-material/Menu';
 import './Header.css';
 import ProfileLink from './ProfileLink';
+const API_BASE_URL = process.env.REACT_APP_BASE_URL;
 
 const Header = () => {
   const navigate = useNavigate();
@@ -38,7 +39,7 @@ const Header = () => {
     const fetchNotifications = async () => {
       try {
         if (!token) return;
-        const res = await axios.get('/api/auth/notifications', {
+        const res = await axios.get(`${API_BASE_URL}/api/auth/notifications`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setNotifications(res.data.notifications || []);
@@ -56,7 +57,7 @@ const Header = () => {
     setShowDropdown(!showDropdown);
     if (!showDropdown && hasUnread) {
       try {
-        await axios.patch('/api/auth/notifications/mark-read', {}, {
+        await axios.patch(`${API_BASE_URL}/api/auth/notifications/mark-read`, {}, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setNotifications(notifications.map(n => ({ ...n, isRead: true })));

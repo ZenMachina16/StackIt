@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './Questions.css';
+const API_BASE_URL = process.env.REACT_APP_BASE_URL;
+// console.log("API_BASE_URL:", API_BASE_URL);
 
 const Questions = () => {
   const [questions, setQuestions] = useState([]);
@@ -37,7 +39,7 @@ const Questions = () => {
       setError('');
       
       try {
-        let url = `/api/questions?page=${currentPage}&limit=${limit}`;
+        let url = `${API_BASE_URL}/api/questions?page=${currentPage}&limit=${limit}`;
         
         // Add filter parameters if needed
         if (filter === 'unanswered') {
