@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './Questions.css';
-import api from '../index';
+//import api from '../index';
 
 const Questions = () => {
   const [questions, setQuestions] = useState([]);
