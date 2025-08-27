@@ -27,6 +27,7 @@ import {
   DialogActions
 } from '@mui/material';
 import { Edit as EditIcon, Save as SaveIcon, Cancel as CancelIcon, Link as LinkIcon, LocationOn as LocationIcon } from '@mui/icons-material';
+const API_BASE_URL = process.env.REACT_APP_BASE_URL;
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -62,7 +63,7 @@ const Profile = () => {
           }
         };
 
-        const res = await axios.get('/api/auth/me', config);
+        const res = await axios.get(`${API_BASE_URL}/api/auth/me`, config);
         
         if (res.data.success) {
           setUser(res.data.user);
@@ -122,7 +123,7 @@ const Profile = () => {
         }
       };
       
-      const res = await axios.put('/api/auth/profile', formData, config);
+      const res = await axios.put(`${API_BASE_URL}/api/auth/profile`, formData, config);
       
       if (res.data.success) {
         setUser(res.data.user);

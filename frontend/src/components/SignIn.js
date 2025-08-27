@@ -10,6 +10,8 @@ import {
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
+const API_BASE_URL = process.env.REACT_APP_BASE_URL;
+
 const SignIn = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({ email: '', password: '' });
@@ -29,7 +31,11 @@ const SignIn = () => {
 
     try {
       const config = { headers: { 'Content-Type': 'application/json' } };
-      const res = await axios.post('/api/auth/login', JSON.stringify(formData), config);
+      const res = await axios.post(
+        `${API_BASE_URL}/api/auth/login`,
+        JSON.stringify(formData),
+        config
+      );
 
       if (res.data.success) {
         localStorage.setItem('token', res.data.token);

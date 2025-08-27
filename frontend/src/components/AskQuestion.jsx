@@ -24,6 +24,8 @@ const AskQuestion = () => {
 
   const { title, description, tags } = formData;
 
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
   const onChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -75,13 +77,13 @@ const AskQuestion = () => {
 
       const processedTags = processTags(tags);
 
-      const body = JSON.stringify({
+      const body = {
         title: title.trim(),
         description: description.trim(),
         tags: processedTags,
-      });
+      };
 
-      const res = await axios.post('/api/questions', body, config);
+      const res = await axios.post(`${API_BASE_URL}/api/questions`, body, config);
 
       if (res.data.success) {
         setMessage('Question posted successfully! Redirecting...');
@@ -253,4 +255,4 @@ const AskQuestion = () => {
   );
 };
 
-export default AskQuestion; 
+export default AskQuestion;
