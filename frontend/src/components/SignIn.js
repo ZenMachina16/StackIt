@@ -9,7 +9,6 @@ import {
 } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-//import api from '../index';
 
 const SignIn = () => {
   const navigate = useNavigate();
@@ -30,7 +29,7 @@ const SignIn = () => {
 
     try {
       const config = { headers: { 'Content-Type': 'application/json' } };
-      const res = await api.post('/auth/login', JSON.stringify(formData), config);
+      const res = await axios.post('/api/auth/login', JSON.stringify(formData), config);
 
       if (res.data.success) {
         localStorage.setItem('token', res.data.token);

@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './Questions.css';
-//import api from '../index';
 
 const Questions = () => {
   const [questions, setQuestions] = useState([]);
@@ -52,7 +51,7 @@ const Questions = () => {
           url += `&search=${encodeURIComponent(search)}`;
         }
 
-        const res = await api.get(url);
+        const res = await axios.get(url);
         
         if (res.data.success) {
           setQuestions(res.data.questions);

@@ -5,7 +5,6 @@ import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import { Paper, Card, Box, Typography, Button, Chip, Alert, Divider } from '@mui/material';
 import { styled } from '@mui/material/styles';
-//import api from '../index';
 
 const QuestionDetail = () => {
   const { id } = useParams();
@@ -32,7 +31,7 @@ const QuestionDetail = () => {
       setLoading(true);
       setError('');
       try {
-        const res = await api.get(`/questions/${id}`);
+        const res = await axios.get(`/api/questions/${id}`);
         if (res.data.success) {
           setQuestion(res.data.question);
         } else {
@@ -64,11 +63,11 @@ const QuestionDetail = () => {
         }
       };
       const body = JSON.stringify({ description: answerText });
-      const res = await api.post(`/answers/${id}`, body, config);
+      const res = await axios.post(`/api/answers/${id}`, body, config);
       if (res.data.success) {
         setAnswerText('');
         // Refresh question to show new answer
-        const updated = await api.get(`/questions/${id}`);
+        const updated = await axios.get(`/api/questions/${id}`);
         setQuestion(updated.data.question);
       }
     } catch (err) {
@@ -93,7 +92,7 @@ const QuestionDetail = () => {
         }
       };
       const body = { type };
-      const res = await api.post(`/answers/${answerId}/vote`, body, config);
+      const res = await axios.post(`/api/answers/${answerId}/vote`, body, config);
       if (res.data.success !== false) {
         // Update the answer's vote count in local state instantly
         setQuestion(prev => {
@@ -137,7 +136,7 @@ const QuestionDetail = () => {
         }
       };
       const body = JSON.stringify({ text });
-      const res = await api.post(`/answers/${answerId}/comments`, body, config);
+      const res = await axios.post(`/api/answers/${answerId}/comments`, body, config);
       if (res.data.success) {
         setQuestion(prev => {
           if (!prev) return prev;
