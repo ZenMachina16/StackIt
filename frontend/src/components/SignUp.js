@@ -27,28 +27,28 @@ const SignUp = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setMessage('');
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setIsLoading(true);
+  setMessage('');
 
-    try {
-      const config = { headers: { 'Content-Type': 'application/json' } };
-      const res = await axios.post('/api/auth/register', JSON.stringify(formData), config);
+  try {
+    const config = { headers: { 'Content-Type': 'application/json' } };
+    const res = await api.post('/auth/register', JSON.stringify(formData), config);
 
-      if (res.data.success) {
-        setMessage('Registration successful! Redirecting...');
-        setTimeout(() => navigate('/login'), 1500);
-      } else {
-        setMessage('Registration failed');
-      }
-    } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Something went wrong.';
-      setMessage(errorMessage);
+    if (res.data.success) {
+      setMessage('Registration successful! Redirecting...');
+      setTimeout(() => navigate('/login'), 1500);
+    } else {
+      setMessage('Registration failed');
     }
+  } catch (error) {
+    const errorMessage = error.response?.data?.message || 'Something went wrong.';
+    setMessage(errorMessage);
+  }
 
-    setIsLoading(false);
-  };
+  setIsLoading(false);
+};
 
   return (
     <Box
